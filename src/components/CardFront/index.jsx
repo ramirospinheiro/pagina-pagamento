@@ -11,7 +11,6 @@ export default function CardFront(){
                 <div className="w-[50%] h-full flex pl-4 items-center gap-2">
                     <div className="w-[60px] h-[60px] rounded-full bg-white"></div>
                     <div className="w-[40px] h-[40px] rounded-full bg-white"></div>
-                
                 </div>
                 <div className="w-[50%] h-full flex p-4 justify-end">
                     <p className="text-[20px] text-white">Nome do banco</p>
