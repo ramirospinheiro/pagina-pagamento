@@ -1,6 +1,8 @@
 import { useState } from "react";
 import CardBack from "./components/CardBack";
 import CardFront from "./components/CardFront";
+import { ToastContainer, toast } from 'react-toastify';
+import instance from "./api/instance";
 
 export default function App() {
   const [nome, setNome] = useState("");
@@ -10,17 +12,47 @@ export default function App() {
   const [cvv, setCvv] = useState(0);
   const [senha, setSenha] = useState("");
 
-  function pagar(){
-    console.log(nome)
-    console.log(numero)
-    console.log(mes)
-    console.log(ano)
-    console.log(cvv)
-    console.log(senha)
+  // async torna a função asincrona, ou seja, para de funcionar linha-por-linha para funcionar via separações especificadas
+  async function pagar(){
+    if (!nome || !numero || !mes || !ano || !cvv || !senha) {
+      return toast.error("Preencha todos os campos")
+    }
+    if (numero.length !== 16){
+      return toast.error("Numero do cartao inválido")
+    }
+    if (cvv.length !== 3){
+      return toast.error("CVV inválido")
+    }
+    if (ano.length != 2){
+      return toast.error("Ano de expiração inválido")
+    }
+    if (mes > 12 || mes < 1){
+      return toast.error("Mês de expiração invalido")
+    }
+    if (senha.length < 4){
+      return toast.error("Senha inválida")
+    }
+    try{
+      const response = await instance.post("/creditcards",{
+        name: nome,
+        number: numero,
+        expiration: `${mes}/${ano}`,
+        cvv:cvv,
+        password:senha
+      })
+      return toast.success("Pagamento realizado com sucesso")
+    }catch (error){
+        return toast.error("Erro ao processar o pagamento")
+    }
   }
-
+  
   return (
     <div className="w-full h-screen flex">
+      <ToastContainer 
+        position="top-right"
+        autoClose={5000}
+        theme="colored"
+      />
       <div className="w-[40%] h-full bg-[#271540] relative">
         <div className="absolute top-10 left-40">
           <CardFront />
@@ -52,7 +84,7 @@ export default function App() {
             </label>
             <input
               onChange={(event) => setNumero(event.target.value)}
-              type="text"
+              type="number"
               placeholder="0123 4567 8910 1112"
               className="w-full h-[40px] rounded-md bg-[#d9d9d9] pl-2 hover:bg-purple-400"
             />
@@ -65,13 +97,13 @@ export default function App() {
               <div className="w-full flex gap-2">
                 <input
                   onChange={(event) => setMes(event.target.value)}
-                  type="text"
+                  type="number"
                   placeholder="MM"
                   className="w-[50%] h-[40px] rounded-md bg-[#d9d9d9] pl-2 hover:bg-purple-400"
                 />
                 <input
                   onChange={(event) => setAno(event.target.value)}
-                  type="text"
+                  type="number"
                   placeholder="AA"
                   className="w-[50%] h-[40px] rounded-md bg-[#d9d9d9] pl-2 hover:bg-purple-400"
                 />
@@ -83,7 +115,7 @@ export default function App() {
               </label>
               <input
                 onChange={(event) => setCvv(event.target.value)}
-                type="text"
+                type="number"
                 placeholder="123"
                 className="w-full h-[40px] rounded-md bg-[#d9d9d9] pl-2 hover:bg-purple-400"
               />
@@ -106,5 +138,5 @@ export default function App() {
         </div>
       </div>
     </div>
-  );
+  )
 }
