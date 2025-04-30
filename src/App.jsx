@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CardBack from "./components/CardBack";
 import CardFront from "./components/CardFront";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 import instance from "./api/instance";
 
 export default function App() {
@@ -12,53 +12,58 @@ export default function App() {
   const [cvv, setCvv] = useState(0);
   const [senha, setSenha] = useState("");
 
+  function formatNumero(evento) {
+    let numero = evento.target.value
+    let numeroFormatado = numero.replace(/\D/g, '') //Remove tudo que nao for numero
+    numeroFormatado = numeroFormatado.substring(0, 16) //Limita a quantidade de caracteres a 16
+    numeroFormatado = numeroFormatado.replace(/(\d{4})/g, '$1 ').trim() //cria espaçamento de 4 em 4 digitos
+    setNumero(numeroFormatado)
+  }
+
   // async torna a função asincrona, ou seja, para de funcionar linha-por-linha para funcionar via separações especificadas
-  async function pagar(){
+  async function pagar() {
     if (!nome || !numero || !mes || !ano || !cvv || !senha) {
-      return toast.error("Preencha todos os campos")
+      return toast.error("Preencha todos os campos");
     }
-    if (numero.length !== 16){
-      return toast.error("Numero do cartao inválido")
+    if (numero.replace(/\s/g, '').length !== 16) {
+      return toast.error("Numero do cartao inválido");
     }
-    if (cvv.length !== 3){
-      return toast.error("CVV inválido")
+    if (cvv.length !== 3) {
+      return toast.error("CVV inválido");
     }
-    if (ano.length != 2){
-      return toast.error("Ano de expiração inválido")
+    if (ano.length != 2) {
+      return toast.error("Ano de expiração inválido");
     }
-    if (mes > 12 || mes < 1){
-      return toast.error("Mês de expiração invalido")
+    if (mes > 12 || mes < 1) {
+      return toast.error("Mês de expiração invalido");
     }
-    if (senha.length < 4){
-      return toast.error("Senha inválida")
+    if (senha.length < 4) {
+      return toast.error("Senha inválida");
     }
-    try{
-      const response = await instance.post("/creditcards",{
+    try {
+      
+      const response = await instance.post("/creditcards", {
         name: nome,
-        number: numero,
+        number: numero.replace(/\s/g, ''),
         expiration: `${mes}/${ano}`,
-        cvv:cvv,
-        password:senha
-      })
-      return toast.success("Pagamento realizado com sucesso")
-    }catch (error){
-        return toast.error("Erro ao processar o pagamento")
+        cvv: cvv,
+        password: senha,
+      });
+      return toast.success("Pagamento realizado com sucesso");
+    } catch (error) {
+      return toast.error("Erro ao processar o pagamento");
     }
   }
-  
+
   return (
     <div className="w-full h-screen flex">
-      <ToastContainer 
-        position="top-right"
-        autoClose={5000}
-        theme="colored"
-      />
+      <ToastContainer position="top-right" autoClose={5000} theme="colored" />
       <div className="w-[40%] h-full bg-[#271540] relative">
         <div className="absolute top-10 left-40">
-          <CardFront />
+          <CardFront nome={nome} numero={numero} />
         </div>
         <div className="absolute top-95 left-70">
-          <CardBack />
+          <CardBack cvv={cvv} />
         </div>
       </div>
 
@@ -83,8 +88,9 @@ export default function App() {
               Número do cartão
             </label>
             <input
-              onChange={(event) => setNumero(event.target.value)}
-              type="number"
+              onChange={(event) => formatNumero(event)}
+              value={numero}
+              type="text"
               placeholder="0123 4567 8910 1112"
               className="w-full h-[40px] rounded-md bg-[#d9d9d9] pl-2 hover:bg-purple-400"
             />
@@ -128,15 +134,18 @@ export default function App() {
             <input
               onChange={(event) => setSenha(event.target.value)}
               type="password"
-              placeholder="******"
+              placeholder="***********"
               className="w-full h-[40px] rounded-md bg-[#d9d9d9] pl-2 hover:bg-purple-400"
             />
           </div>
-          <button className="w-full h-[50px] bg-[#271540] text-white font-bold rounded-md" onClick={pagar}>
+          <button
+            className="w-full h-[50px] bg-[#271540] text-white font-bold rounded-md"
+            onClick={pagar}
+          >
             Pagar
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
